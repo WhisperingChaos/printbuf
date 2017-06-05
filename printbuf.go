@@ -25,52 +25,38 @@ Example
 	Declare variable 'lf' based on 'LoadFail' custom type:
 
 	var lf LoadFail
-	lf.Init("Preamle of message:")
-	...
-	lf.Sprintf("tail")
+	lf.Sprintf("message")
 	...
 	var err error = lf;
 	...
 	if err.(LoadFail) {
 		fmt.Fprintf(err.Error())
-		//	output: "Preamble of message:tail"
+		//	output: "message"
 	}
 
 Notes
 
-* Defined methods as value receivers:
-    Why?
-		- To reinforce convention that a custom type should be declared as
-		  a value type: "var <varName> <CustomErrorType>".  Therefore its
-		  type assertion can be encoded as: "err.(<CustomErrorType>)" which seems
-		  more readable than declaring the variable as a pointer type.  A pointer
-		  type would requre: "err.(*<CustomErrorType>)".
-
-* Use Init() method after declaring a custom type to properly instantiate custom type.
-	Why?
-		- Eliminates need to code custom new/init method for every custome type.  However
-		  these custom methods can be enoded if necessary.
+* Currently not concurrency safe.
 */
 type T struct {
 	*bytes.Buffer
 }
-
-func New(preamble string) (pb *T) {
-	pb = new(T)
-	return pb.Init(preamble)
-}
-func (pb *T) Init(preamble string) *T {
-	pb.Buffer = bytes.NewBufferString(preamble)
-	return pb
-}
-func (pb T) Sprintf(format string, args ...interface{}) T {
+func (pb *T) Sprintf(format string, args ...interface{}) {
+	pb.init()	
 	pb.WriteString(fmt.Sprintf(format, args...))
-	return pb
 }
-func (pb T) Sprintln(a ...interface{}) T {
+func (pb *T) Sprintln(a ...interface{}) {
+	pb.init()
 	pb.WriteString(fmt.Sprintln(a...))
-	return pb
 }
-func (pb T) Error() string {
-	return string(pb.Bytes())
+func (pb *T) Error() string {
+	pb.init()
+	return pb.String()
 }
+
+func (pb *T) init(){
+	if pb.Buffer == nil {
+		pb.Buffer = bytes.NewBufferString("")
+	}
+}
+
