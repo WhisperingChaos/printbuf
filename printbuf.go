@@ -41,22 +41,24 @@ Notes
 type T struct {
 	*bytes.Buffer
 }
+
 func (pb *T) Sprintf(format string, args ...interface{}) {
-	pb.init()	
+	pb.init()
 	pb.WriteString(fmt.Sprintf(format, args...))
 }
 func (pb *T) Sprintln(a ...interface{}) {
 	pb.init()
 	pb.WriteString(fmt.Sprintln(a...))
 }
-func (pb *T) Error() string {
-	pb.init()
+func (pb T) Error() string {
+	if pb.Buffer == nil {
+		return String()
+	}
 	return pb.String()
 }
 
-func (pb *T) init(){
+func (pb *T) init() {
 	if pb.Buffer == nil {
 		pb.Buffer = bytes.NewBufferString("")
 	}
 }
-
