@@ -52,7 +52,7 @@ func (pb *T) Sprintln(a ...interface{}) {
 }
 func (pb T) Error() string {
 	if pb.Buffer == nil {
-		return String()
+		return ""
 	}
 	return pb.String()
 }
